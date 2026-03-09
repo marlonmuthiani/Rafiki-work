@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "pnpm --filter @different-ai/openwork-web build",
+  "buildCommand": "pnpm --filter @different-ai/openwork-landing build",
   "installCommand": "pnpm install",
   "outputDirectory": ".next"
 }
