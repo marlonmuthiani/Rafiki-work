@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Inter } from "next/font/google";
 import Script from "next/script";
+import { AuthProvider } from "./lib/supabase/auth";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,9 +18,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OpenWork Cloud",
-  description:
-    "Launch OpenWork cloud workers, handle Polar paywall flows, and operate Den from app.openwork.software."
+  title: "Rafiki - Collaborative AI Team Workspace",
+  description: "Launch Rafiki cloud workers, manage your AI team, and collaborate with agents."
 };
 
 const defaultPosthogKey = "phc_4YnPTlDVYPjgwKvLuNxhbHjV5kadgvd7XLzVHWnCXAI";
@@ -48,7 +48,11 @@ export default function RootLayout({
           <Script id="posthog" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: posthogBootstrap }} />
         ) : null}
       </head>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }
