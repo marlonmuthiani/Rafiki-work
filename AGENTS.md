@@ -253,3 +253,69 @@ This is usually covered by `Release App` when `publish_sidecars` + `publish_npm`
     * `pnpm --filter openwork-orchestrator publish --access public`
 6.  Verify:
     * `npm view openwork-orchestrator version`
+
+<!-- This section is maintained by the coding agent via lore (https://github.com/BYK/opencode-lore) -->
+## Long-term Knowledge
+
+### Pattern
+
+<!-- lore:019cd0a0-7a2c-7d7b-bc4b-d6717755112b -->
+* **Auto-reload setting**: each workspace can opt into automatic reload via  (). When enabled, the engine reloads automatically once queued signals are ready and no sessions are active.
+
+<!-- lore:019cd0a0-7930-76aa-b020-c84007269ebe -->
+* **Composable**: use the desktop app, WhatsApp/Slack/Telegram connectors, or server mode based on the task.
+
+<!-- lore:019cd0a0-79fb-7d27-8cf5-d34ad14c3b77 -->
+* **Conservative triggers**: only reload when a file that OpenCode reads at startup actually changes inside  or . Ignore metadata files like , , etc.
+
+<!-- lore:019cd0a0-793f-73ca-9398-62d6b0b9a503 -->
+* **Ejectable**: OpenWork is powered by OpenCode, so anything OpenCode can do is available in OpenWork, even before a dedicated UI exists.
+
+<!-- lore:019cd0a0-7910-7ca7-8bd2-1a34a0dbf57f -->
+* **Local-first, cloud-ready**: OpenWork runs on your machine in one click and can connect to cloud workflows when needed.
+
+<!-- lore:019cd0a0-79ea-7c9c-9ebe-7dfbc1db6e8c -->
+* **Mobile-native**: touch targets, gestures, and layouts optimized for small screens.
+
+<!-- lore:019cd0a0-79c4-763e-ba91-e6077afb77e0 -->
+* **Open source**: keep the repo portable; no secrets committed.
+
+<!-- lore:019cd0a0-796b-7bd2-b2d0-d30a7be29f7e -->
+* **Parity with OpenCode**: anything the UI can do must map cleanly to OpenCode tools.
+
+<!-- lore:019cd0a0-7a4a-72b6-a5c7-517f931c6f60 -->
+* **Per-workspace isolation**: the desktop file watcher only watches the active workspace root and its  directory. The server reload event store is already keyed by .
+
+<!-- lore:019cd0a0-797b-71f0-8830-f2a4d6b48a0a -->
+* **Prefer OpenCode primitives**: represent concepts using OpenCode's native surfaces first (folders/projects, , , skills, plugins) before introducing new abstractions.
+
+<!-- lore:019cd0a0-795b-7d31-add3-873d8dffd022 -->
+* **Purpose-first UI**: prioritize clarity, safety, and approachability for non-technical users.
+
+<!-- lore:019cd0a0-79af-7730-8acb-178d613a9160 -->
+* **Self-building**: prefer prompts, skills, and composable primitives over bespoke logic.
+
+<!-- lore:019cd0a0-799d-788f-89a4-5ac74cb4977a -->
+* **Self-referential**: maintain a gitignored mirror of OpenCode at  for inspection.
+
+<!-- lore:019cd0a0-7922-7b52-bc7b-3922cdc19897 -->
+* **Server-consumption first**: the app should consume OpenWork server surfaces (self-hosted or hosted), not invent parallel behavior.
+
+<!-- lore:019cd0a0-7a3a-7817-8eb1-d5de0016f8f3 -->
+* **Session continuity**: before reload, capture running session IDs, agents, and models. After reload, optionally relaunch those sessions so the user experiences seamless continuity.
+
+<!-- lore:019cd0a0-7a1c-760a-9acd-6b3bcab8a213 -->
+* **Session-aware**: when sessions are actively running, queue reload signals. Promote to visible reload (toast or auto-reload) only after all active sessions finish. This avoids interrupting in-flight tool calls.
+
+<!-- lore:019cd0a0-794e-7431-bb0d-c21493a21694 -->
+* **Sharing is caring**: start solo, then share quickly; one CLI or desktop command can spin up an instantly shareable instance.
+
+<!-- lore:019cd0a0-79dc-7aa7-beea-08dc3fa60d79 -->
+* **Slick and fluid**: 60fps animations, micro-interactions, premium feel.
+
+<!-- lore:019cd0a0-798a-7d70-a1f9-b2d7ac1d278f -->
+* **Web parity**: anything that mutates  should be expressible via the OpenWork server API; Tauri-only filesystem calls are a fallback for host mode, not a separate capability set.
+
+<!-- lore:019cd0a0-7a0b-7996-ab0c-2a2ac39ca58f -->
+* **Workspace-scoped**: reload state is keyed per workspace. Switching workspaces never leaks reload signals from one workspace to another.
+<!-- End lore-managed section -->
