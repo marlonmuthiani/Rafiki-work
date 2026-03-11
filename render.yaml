@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: openwork-orchestrator
+    env: docker
+    dockerfilePath: packaging/docker/Dockerfile
+    dockerContext: .
+    startCommand: >
+      openwork serve
+      --workspace /workspace
+      --openwork-host 0.0.0.0
+      --openwork-port $PORT
+      --opencode-host 127.0.0.1
+      --opencode-port 4096
+      --connect-host 127.0.0.1
+      --cors "*"
+      --approval manual
+      --no-opencode-router
+    envVars:
+      - key: OPENWORK_DATA_DIR
+        value: /data/openwork-orchestrator
+      - key: OPENWORK_SIDECAR_DIR
+        value: /data/sidecars
+      - key: OPENWORK_WORKSPACE
+        value: /workspace
+      - key: OPENWORK_TOKEN
+        generateValue: true
+      - key: OPENWORK_HOST_TOKEN
+        generateValue: true
+    disk:
+      - name: workspace
+        mountPath: /workspace
+        sizeGB: 1
+      - name: data
+        mountPath: /data
+        sizeGB: 1
+    autoDeploy: false
+    healthCheckPath: /health
+    regions:
+      - oregon
