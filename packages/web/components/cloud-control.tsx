@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useAuth } from "../app/lib/supabase/auth";
 
 type Step = 1 | 2;
 type AuthMode = "sign-in" | "sign-up";
@@ -839,7 +840,7 @@ async function requestJson(path: string, init: RequestInit = {}, timeoutMs = 300
 
   let response: Response;
   try {
-    const endpoint = path.startsWith("/api/") ? path : `/api/den${path}`;
+    const endpoint = path.startsWith("/api/") ? path : `/api/v1${path}`;
     response = await fetch(endpoint, {
       ...init,
       headers,
@@ -905,6 +906,9 @@ function CredentialRow({
 }
 
 export function CloudControlPanel() {
+  // Supabase auth - replaces OpenWork token-based auth
+  const { user: supabaseUser, loading: supabaseLoading, signIn: supabaseSignIn, signOut: supabaseSignOut } = useAuth();
+
   const [step, setStep] = useState<Step>(1);
   const [shellView, setShellView] = useState<ShellView>("workers");
 
@@ -914,19 +918,10 @@ export function CloudControlPanel() {
   const [authBusy, setAuthBusy] = useState(false);
   const [authInfo, setAuthInfo] = useState(getAuthInfoForMode("sign-up"));
   const [authError, setAuthError] = useState<string | null>(null);
+  
+  // Use Supabase user directly - no more token-based auth
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [authToken, setAuthToken] = useState<string | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    const token = window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
-    if (!token || token.trim().length === 0) {
-      return null;
-    }
-
-    return token;
-  });
+  const [authToken, setAuthToken] = useState<string | null>(null);
 
   const [workerName, setWorkerName] = useState("Founder Ops Pilot");
   const [worker, setWorker] = useState<WorkerLaunch | null>(null);
@@ -1304,6 +1299,22 @@ export function CloudControlPanel() {
   }, [authToken]);
 
   useEffect(() => {
+    if (supabaseLoading) {
+      return;
+    }
+    if (supabaseUser) {
+      setUser({
+        id: supabaseUser.id,
+        email: supabaseUser.email ?? "",
+        name: supabaseUser.user_metadata?.name as string | null,
+      });
+      setAuthInfo(`Signed in as ${supabaseUser.email}.`);
+    } else {
+      setUser(null);
+    }
+  }, [supabaseUser, supabaseLoading]);
+
+  useEffect(() => {
     void refreshSession(true);
   }, [authToken]);
 
@@ -1626,55 +1637,11 @@ export function CloudControlPanel() {
     });
 
     try {
-      const callbackURL = getGithubCallbackUrl();
-      const { response, payload } = await requestJson("/api/auth/sign-in/social", {
-        method: "POST",
-        body: JSON.stringify({
-          provider: "github",
-          callbackURL,
-          errorCallbackURL: callbackURL
-        })
-      });
-
-      if (!response.ok) {
-        if (shouldTrackGithubSignup) {
-          window.sessionStorage.removeItem(PENDING_GITHUB_SIGNUP_STORAGE_KEY);
-        }
-        setAuthInfo(getAuthInfoForMode(authMode));
-        setAuthError(getErrorMessage(payload, `GitHub sign-in failed with ${response.status}.`));
-        trackPosthogEvent("den_auth_failed", {
-          mode: authMode,
-          method: "github",
-          status: response.status
-        });
-        setAuthBusy(false);
-        return;
-      }
-
-      const payloadUrl = isRecord(payload) && typeof payload.url === "string" ? payload.url.trim() : "";
-      const headerUrl = response.headers.get("location")?.trim() ?? "";
-      const redirectUrl = payloadUrl || headerUrl;
-
-      if (!redirectUrl) {
-        if (shouldTrackGithubSignup) {
-          window.sessionStorage.removeItem(PENDING_GITHUB_SIGNUP_STORAGE_KEY);
-        }
-        setAuthInfo(getAuthInfoForMode(authMode));
-        setAuthError("GitHub sign-in did not return a redirect URL.");
-        trackPosthogEvent("den_auth_failed", {
-          mode: authMode,
-          method: "github",
-          reason: "missing_redirect_url"
-        });
-        setAuthBusy(false);
-        return;
-      }
-
+      await supabaseSignIn();
       trackPosthogEvent("den_auth_redirected", {
         mode: authMode,
         method: "github"
       });
-      window.location.assign(redirectUrl);
     } catch (error) {
       if (shouldTrackGithubSignup) {
         window.sessionStorage.removeItem(PENDING_GITHUB_SIGNUP_STORAGE_KEY);
@@ -1700,11 +1667,7 @@ export function CloudControlPanel() {
     setAuthError(null);
 
     try {
-      await requestJson("/api/auth/sign-out", {
-        method: "POST",
-        headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
-        body: JSON.stringify({})
-      });
+      await supabaseSignOut();
     } catch {
       // Ignore sign-out transport issues and clear local session state anyway.
     } finally {
