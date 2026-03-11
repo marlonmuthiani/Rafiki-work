@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 // Force fresh build
-import { createServerClient, getAuthenticatedUser } from '../../../lib/supabase/server'
+import { createServerClient, getAuthenticatedUser } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   const user = await getAuthenticatedUser()
