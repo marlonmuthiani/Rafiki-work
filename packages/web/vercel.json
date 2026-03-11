@@ -3,6 +3,5 @@
   "framework": "nextjs",
   "buildCommand": "pnpm --filter @different-ai/openwork-web build",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "outputDirectory": ".next",
-  "ignoreBuildCache": true
+  "outputDirectory": ".next"
 }
